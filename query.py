@@ -3,10 +3,11 @@
     George Blombach
     USC ID 2416-0961-99
     DSCI 551 - Spring 2023
-    Homework #2
-    February 24, 2023
+    Firebase Emulator Project
+    April, 2023
 
     File:   query.py
+    Desc:   routine to query MongoDB running in EC2 instance
 """
 
 from pymongo import MongoClient
