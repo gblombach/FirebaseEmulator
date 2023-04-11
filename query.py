@@ -12,25 +12,27 @@
 
 from pymongo import MongoClient
 
+myMongoDB = "mongodb://34.216.225.127:27017"
+
 # Making Connection
-myclient = MongoClient("mongodb://34.216.225.127:27017")
+mongoClient = MongoClient(myMongoDB)
 
 # database
-db = myclient["video"]
+db = mongoClient["dsci551"]
 
 # Created or Switched to collection
 # names: GeeksForGeeks
-Collection = db["movies"]
+Collection = db["aqi"]
 
 # Filtering the Quantities greater
 # than 40 using query.
-#cursor = Collection.find({"year": {"$gt": 40}})
+cursor = Collection.find({"Country": "United States of America"})
 
 # Printing the filtered data.
 print("The data having year greater than 40 is:")
-cursor = Collection.find()
+cursor = Collection.find({"Country": "United States of America"})
 #print(cursor)
 for record in cursor:
     print(record)
 
-myclient.close()
+mongoClient.close()
