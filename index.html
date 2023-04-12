@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Zombie Alert System</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+
+        Time = <textarea id='value' rows="4" cols="50" wrap="hard"></textarea>
+        <script>
+            var ws = new WebSocket("ws://127.0.0.1:5678/");
+
+            var value = document.getElementById('value');
+            var messageText = "";
+            ws.onmessage = function (message) {
+                messageText =  message.data + ' \r\n' + value.value;
+                value.innerHTML = messageText.toString();
+            };
+        </script>
+    </body>
+</html>
