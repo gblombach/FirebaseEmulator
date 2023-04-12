@@ -21,7 +21,6 @@ mongoClient = MongoClient(myMongoDB)
 db = mongoClient["dsci551"]
 
 # Created or Switched to collection
-# names: GeeksForGeeks
 Collection = db["aqi"]
 
 # Filtering the Quantities greater
