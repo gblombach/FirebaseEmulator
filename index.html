@@ -7,6 +7,9 @@
     <body>
 
         Time = <textarea id='value' rows="4" cols="50" wrap="hard"></textarea>
+        <iframe id="GoogleMap" src="./map.html" height="1000" width="800">
+
+</iframe>
         <script>
             var ws = new WebSocket("ws://127.0.0.1:5678/");
 
@@ -15,7 +18,9 @@
             ws.onmessage = function (message) {
                 messageText =  message.data + ' \r\n' + value.value;
                 value.innerHTML = messageText.toString();
+                document.getElementById('GoogleMap').contentWindow.location.replace("map.html")
             };
+
         </script>
     </body>
 </html>

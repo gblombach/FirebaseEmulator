@@ -7,11 +7,12 @@
     April, 2023
 
     File:   websocketServer.py
+    Description:
+            Websocket server listening on IP 127.0.0.1, port 5678
 """
 
 import asyncio
 import datetime
-import random
 import websockets
 
 
