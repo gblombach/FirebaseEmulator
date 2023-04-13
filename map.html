@@ -11,16 +11,9 @@
 
   <script type="text/javascript">
 
-    let latitude = null;
-    let longitude = null;
-    let urlParams = new URLSearchParams(queryString);
-    latitude = urlParams.get('latitude');
-    longitude = urlParams.get('longitude');
-    var locations = [];
-
-    if(latitude != null){
-      locations = [['Here be Zombies', latitude, longitude, 4]]
-      };
+    var locations = [
+      ['Gardena', 33.893787, -118.307991, 4]
+    ];
 
     var map = new google.maps.Map(document.getElementById('map'), {
       zoom: 10,
