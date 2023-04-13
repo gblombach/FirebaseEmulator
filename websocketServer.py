@@ -14,17 +14,41 @@
 import asyncio
 import datetime
 import websockets
+from pymongo import MongoClient
+
+# set mongo DB
+myMongoInstance = "mongodb://34.216.225.127:27017"
+#myMongoDB = "mongoDB://localhost:27017"
+myMongoDB = "ZAS"
+myMongoCollection = "Alerts"
 
 
-async def time(websocket, path):
+async def get_insert():
+
+    # Make MongoDB Connection
+    mongoClient = MongoClient(myMongoInstance)
+    # database
+    db = mongoClient[myMongoDB]
+    collection = db[myMongoCollection]
+
+    change_stream = collection.watch([{"$match": {"operationType": "insert"}}])
+    for change in change_stream:
+        message = change["fullDocument"]
+        #print(str(message))
+        return str(message)
+
+
+async def send_alert(websocket, path):
     print("new connection path " + path)
+
     while True:
+        #await websocket.send(now)
+        await websocket.send(await get_insert())
         now = datetime.datetime.utcnow().isoformat() + 'Z'
         print(now)
-        await websocket.send(now)
-        await asyncio.sleep(10)
+        await asyncio.sleep(0)
 
-start_server = websockets.serve(time, '127.0.0.1', 5678)
+start_server = websockets.serve(send_alert, '127.0.0.1', 5678)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
