@@ -6,9 +6,12 @@
     </head>
     <body>
     <h1>Zombie Alert System</h1>
-        Time = <textarea id='value' rows="4" cols="50" wrap="hard"></textarea>
+    <div> Alert = <span id='value' ></span></div>
+    <br>
+    <div>
         <iframe id="GoogleMap" src="./map.html" height="825" width="1025">
-
+        </iframe>
+    </div>
 </iframe>
         <script>
             var ws = new WebSocket("ws://127.0.0.1:5678/");
@@ -17,8 +20,12 @@
             var messageText = "";
             ws.onmessage = function (message) {
                 messageText =  message.data + ' \r\n' + value.value;
-                value.innerHTML = messageText.toString();
-                document.getElementById('GoogleMap').contentWindow.location.replace("map.html")
+                value.innerHTML = message;
+                var temp = String.split(message)
+                var latitude = temp(0);
+                var longitude = temp(1);
+                document.getElementById('GoogleMap').contentWindow.location.replace("map.html?latitude=" + latitude +
+                    "&longitude=" + longitude)
             };
 
         </script>

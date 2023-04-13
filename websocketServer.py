@@ -34,8 +34,10 @@ async def get_insert():
     change_stream = collection.watch([{"$match": {"operationType": "insert"}}])
     for change in change_stream:
         message = change["fullDocument"]
-        #print(str(message))
-        return str(message)
+        latitude = message["latitude"]
+        longitude = message["longitude"]
+        print(latitude, longitude)
+        return latitude, " ", longitude
 
 
 async def send_alert(websocket, path):
