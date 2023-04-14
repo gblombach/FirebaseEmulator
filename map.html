@@ -12,12 +12,26 @@
   <script type="text/javascript">
 
     var locations = [
-      ['Gardena', 33.893787, -118.307991, 4]
+      []
     ];
+
+    let centerLatitude = 34.02051;
+    let centerLongitude = -118.2856;
+    let latitude = null;
+    let longitude = null;
+    let queryString = window.location.search;
+    let urlParams = new URLSearchParams(queryString);
+    latitude = urlParams.get('latitude');
+    longitude = urlParams.get('longitude');
+    if(latitude != null){
+      locations = [['Here be Zombies', latitude, longitude, 4]];
+      centerLatitude = latitude;
+      centerLongitude = longitude;
+      };
 
     var map = new google.maps.Map(document.getElementById('map'), {
       zoom: 10,
-      center: new google.maps.LatLng(33.925321, -118.182582),
+      center: new google.maps.LatLng(centerLatitude, centerLongitude),
       mapTypeId: google.maps.MapTypeId.ROADMAP
     });
     
