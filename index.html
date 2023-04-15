@@ -6,13 +6,15 @@
     </head>
     <body>
     <h1>Zombie Alert System</h1>
-    <div> Alert = <span id='value' ></span></div>
+
     <br>
     <div>
-        <iframe id="GoogleMap" src="./map.html" height="825" width="1025">
+        <iframe id="GoogleMap" src="./map.html" height="625" width="825" frameborder="0px">
         </iframe>
     </div>
-</iframe>
+    <br>
+    <div id="alertBox"> Alert = <span id='value' ></span></div>
+
         <script>
             var ws = new WebSocket("ws://127.0.0.1:5678/");
 

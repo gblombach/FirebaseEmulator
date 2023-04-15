@@ -6,8 +6,8 @@
   <script src="http://maps.google.com/maps/api/js?key=AIzaSyAyQDsjPqKn2--Im22acF3QdwMJYrcy6b8" 
           type="text/javascript"></script>
 </head> 
-<body>
-  <div id="map" style="width: 1000px; height: 800px;"></div>
+<body style="background-color:#000000;">
+  <div id="map" style="width: 800px; height: 600px;"></div>
 
   <script type="text/javascript">
 
@@ -17,6 +17,7 @@
 
     let centerLatitude = 34.02051;
     let centerLongitude = -118.2856;
+    let zoom_scale  = 18;
     let latitude = null;
     let longitude = null;
     let queryString = window.location.search;
@@ -27,12 +28,13 @@
       locations = [['Here be Zombies', latitude, longitude, 4]];
       centerLatitude = latitude;
       centerLongitude = longitude;
+      zoom_scale = 12;
       };
 
     var map = new google.maps.Map(document.getElementById('map'), {
-      zoom: 10,
+      zoom: zoom_scale,
       center: new google.maps.LatLng(centerLatitude, centerLongitude),
-      mapTypeId: google.maps.MapTypeId.ROADMAP
+      mapTypeId: google.maps.MapTypeId.HYBRID
     });
     
     var infowindow = new google.maps.InfoWindow();

@@ -27,27 +27,76 @@
 """
 
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from pymongo import MongoClient
+from bson import json_util
+import pymongo
 
 # set mongo DB
 myMongoInstance = "mongodb://34.216.225.127:27017"
 #myMongoDB = "mongoDB://localhost:27017"
 myMongoDB = "ZAS"
-myMongoCollection = "Alerts"
+myMongoCollections = ["Alerts", "Regions"]
 
-
+# Make MongoDB Connection
+mongoClient = MongoClient(myMongoInstance)
+# database
+db = mongoClient[myMongoDB]
 
 app = Flask(__name__)
 
 
+def format_json(data):
+    return json_util.dumps(data)
+
+
+def getQuery(myPath, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt):
+
+    print("here: ", myPath, " ", orderBy, " ", limitToFirst)
+    collection = db[myPath]
+    #TODO myPath
+    #add paths
+
+    match_string = {"$match": {}}
+    pipeline = [match_string]
+
+
+
+    if orderBy is not None:
+        if orderBy == "$key":
+            sort_string = {"$sort": {"_id": -1}}
+            pipeline.append(sort_string)
+        elif orderBy == "$value":
+            sort_string = {"$sort": {"value": -1}}
+            pipeline.append(sort_string)
+        else:
+            sort_string = {"$sort": {orderBy: -1}}
+            pipeline.append(sort_string)
+
+    if limitToFirst is not None:
+        limit_string = {"$limit": int(limitToFirst)}
+        pipeline.append(limit_string)
+    if limitToLast is not None:
+        limit_string = {"$limit": int(limitToLast)}
+        pipeline.append(limit_string)
+        #Todo set reverse sort
+
+    if startAt is not None:
+        pipeline.append()
+
+    if endAt is not None:
+        pipeline.append()
+
+    if equalTo is not None:
+        pipeline.append()
+
+    results = collection.aggregate(pipeline)
+
+    return results
+
 def main():
 
-    # Make MongoDB Connection
-    mongoClient = MongoClient(myMongoInstance)
-    # database
-    db = mongoClient[myMongoDB]
-    collection = db[myMongoCollection]
+
 
     #test
     @app.route("/")
@@ -61,7 +110,23 @@ def main():
     @app.route('/<path:myPath>', methods=['GET'])
     def get(myPath):
 
-        return "Getting"
+        orderBy = request.args.get("orderBy")
+        limitToFirst = request.args.get("limitToFirst")
+        limitToLast = request.args.get("limitToLast")
+        equalTo = request.args.get("equalTo")
+        startAt = request.args.get("startAt")
+        endAt = request.args.get("endAt")
+        print("limit ",limitToFirst)
+
+        #request.args.get("orderBy")
+
+        #results = collection.find()
+        #print(format_json(results))
+        if myPath not in myMongoCollections:
+            results = ""
+        else:
+            results = getQuery(myPath, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt)
+        return format_json(results)
 
     @app.route('/<path:myPath>', methods=['PATCH'])
     def patch(myPath):
@@ -77,4 +142,6 @@ def main():
         return jsonify(data)
 
 
-main()
+if __name__ == '__main__':
+    main()
+    app.run(host='127.0.0.1', port=5555)

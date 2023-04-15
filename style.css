@@ -1,10 +1,27 @@
-h1 {
+h1, iframe {
     text-align: center; margin: 0px auto; display: block;
+    font-size: 4em;
+    color: white;
 }
 
-h1,body{
+h1, body, div{
     font-family: Verdana, Arial, Helvetica, sans-serif;
 }
-textarea{
-    white-space: pre-wrap;
+
+body {
+    background: url("ZombieBorder.jpg") no-repeat;
+    background-size: 100% 100%;
+}
+
+div{
+    color: white;
+}
+
+#alertBox{
+    background: black;
+    color: white;
+    a: center;
+    height: 150px;
+    width: 400px;
+    margin: auto;
 }

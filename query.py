@@ -11,6 +11,8 @@
 """
 
 from pymongo import MongoClient
+from bson import json_util
+import json
 
 myMongoDB = "mongodb://34.216.225.127:27017"
 
@@ -27,10 +29,13 @@ Collection = db["aqi"]
 # than 40 using query.
 cursor = Collection.find({"Country": "United States of America"})
 
+
+def parse_json(data):
+    return json_util.dumps(data)
 # Printing the filtered data.
-print("The data having year greater than 40 is:")
+
 cursor = Collection.find({"Country": "United States of America"})
-#print(cursor)
+print(parse_json(cursor))
 for record in cursor:
     print(record)
 
