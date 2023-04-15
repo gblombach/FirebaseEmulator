@@ -54,6 +54,7 @@ def getQuery(myPath, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt
 
     print("here: ", myPath, " ", orderBy, " ", limitToFirst)
     collection = db[myPath]
+    sort_direction = 1
     #TODO myPath
     #add paths
 
@@ -64,13 +65,13 @@ def getQuery(myPath, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt
 
     if orderBy is not None:
         if orderBy == "$key":
-            sort_string = {"$sort": {"_id": -1}}
+            sort_string = {"$sort": {"_id": sort_direction}}
             pipeline.append(sort_string)
         elif orderBy == "$value":
-            sort_string = {"$sort": {"value": -1}}
+            sort_string = {"$sort": {"value": sort_direction}}
             pipeline.append(sort_string)
         else:
-            sort_string = {"$sort": {orderBy: -1}}
+            sort_string = {"$sort": {orderBy: sort_direction}}
             pipeline.append(sort_string)
 
     if limitToFirst is not None:
@@ -78,8 +79,10 @@ def getQuery(myPath, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt
         pipeline.append(limit_string)
     if limitToLast is not None:
         limit_string = {"$limit": int(limitToLast)}
+        temp = list(sort_string["$sort"].keys())
+        sort_string["$sort"][str(temp)] = -1
         pipeline.append(limit_string)
-        #Todo set reverse sort
+
 
     if startAt is not None:
         pipeline.append()
