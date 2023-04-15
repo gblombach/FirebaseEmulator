@@ -62,9 +62,10 @@ def getQuery(myPath, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt
     pipeline = [match_string]
 
 
+    #//Todo need to test single and double quotes in curl on Ubuntu
 
     if orderBy is not None:
-        if orderBy == "$key":
+        if orderBy == "'$key'":
             sort_string = {"$sort": {"_id": sort_direction}}
             pipeline.append(sort_string)
         elif orderBy == "$value":
@@ -74,27 +75,30 @@ def getQuery(myPath, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt
             sort_string = {"$sort": {orderBy: sort_direction}}
             pipeline.append(sort_string)
 
-    if limitToFirst is not None:
-        limit_string = {"$limit": int(limitToFirst)}
-        pipeline.append(limit_string)
-    if limitToLast is not None:
-        limit_string = {"$limit": int(limitToLast)}
-        temp = list(sort_string["$sort"].keys())
-        sort_string["$sort"][str(temp)] = -1
-        pipeline.append(limit_string)
+        if startAt is not None:
+            pipeline.append()
 
+        if endAt is not None:
+            pipeline.append()
 
-    if startAt is not None:
-        pipeline.append()
+        if equalTo is not None:
+            pipeline.append()
 
-    if endAt is not None:
-        pipeline.append()
-
-    if equalTo is not None:
-        pipeline.append()
+        if limitToFirst is not None:
+            limit_string = {"$limit": int(limitToFirst)}
+            pipeline.append(limit_string)
+        if limitToLast is not None:
+            limit_string = {"$limit": int(limitToLast)}
+            temp = list(sort_string["$sort"].keys())
+            pipeline.remove(sort_string)
+            #print(str(temp[0]))
+            # reverse order of sort, and update pipeline string
+            sort_string["$sort"][str(temp[0])] = -1
+            #print(sort_string)
+            pipeline.append(sort_string)
+            pipeline.append(limit_string)
 
     results = collection.aggregate(pipeline)
-
     return results
 
 def main():
