@@ -103,8 +103,6 @@ def getQuery(myPath, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt
 
 def main():
 
-
-
     #test
     @app.route("/")
     def hello_world():
@@ -129,6 +127,7 @@ def main():
 
         #results = collection.find()
         #print(format_json(results))
+        #ToDo need to move to function and address deep path
         if myPath not in myMongoCollections:
             results = ""
         else:
@@ -145,6 +144,7 @@ def main():
 
     @app.route('/<path:myPath>', methods=['PUT'])
     def put(myPath):
+        print(myPath)
         data = {"status": "Putting"}
         return jsonify(data)
 
