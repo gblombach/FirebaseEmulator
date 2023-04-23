@@ -19,9 +19,10 @@ div{
 
 #alertBox{
     background: black;
-    color: white;
+    color: red;
+    size: 2em;
     a: center;
     height: 150px;
-    width: 400px;
+    width: 600px;
     margin: auto;
 }

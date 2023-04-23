@@ -30,13 +30,14 @@
 from flask import Flask, jsonify, request
 from pymongo import MongoClient
 from bson import json_util
-import pymongo
+from bson.objectid import ObjectId
+import json
 
 # set mongo DB
 myMongoInstance = "mongodb://34.216.225.127:27017"
 #myMongoDB = "mongoDB://localhost:27017"
 myMongoDB = "ZAS"
-myMongoCollections = ["Alerts", "Regions"]
+myMongoCollections = ["Alerts", "Regions", "fruit"]
 
 # Make MongoDB Connection
 mongoClient = MongoClient(myMongoInstance)
@@ -46,21 +47,54 @@ db = mongoClient[myMongoDB]
 app = Flask(__name__)
 
 
-def format_json(data):
-    return json_util.dumps(data)
+def format_json(data, style):
+    if style == 'pretty':
+        return json_util.dumps(data, sort_keys=True, indent=4)
+    else:
+        return json_util.dumps(data)
 
+def parsePath(myPath):
+    #strip off .json"
+    temp1 = myPath.replace(".json","")
+    #separate
+    temp2 = temp1.split("/")
+    thisCollection = temp2[0]
+    if len(temp2) > 1:
+        thisRecord = temp2[1]
+    else:
+        thisRecord = ""
+    return thisCollection, thisRecord
 
-def getQuery(myPath, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt):
+def deleteRecord(thisCollection, thisRecord):
 
-    print("here: ", myPath, " ", orderBy, " ", limitToFirst)
-    collection = db[myPath]
+    collection = db[thisCollection]
+    print("delete ", thisRecord)
+    results = collection.delete_one({"_id": ObjectId(thisRecord)})
+    return results
+
+def insertRecord(thisCollection, data):
+
+    collection = db[thisCollection]
+    results = collection.insert_one(data)
+    return results
+
+def updateRecord(thisCollection, thisRecord, data, upsert):
+
+    collection = db[thisCollection]
+    if upsert:
+        results = collection.update_one({"_id": ObjectId(thisRecord)}, {"$set": data}, upsert)
+    else:
+        results = collection.update_one({"_id": ObjectId(thisRecord)}, {"$set": data})
+    return results
+
+def getQuery(thisCollection, thisRecord, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt):
+
+    print("here: ", thisCollection, " ", thisRecord, " " , orderBy, " ", limitToFirst)
+    collection = db[thisCollection]
     sort_direction = 1
-    #TODO myPath
-    #add paths
 
     match_string = {"$match": {}}
     pipeline = [match_string]
-
 
     #//Todo need to test single and double quotes in curl on Ubuntu
 
@@ -76,29 +110,50 @@ def getQuery(myPath, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt
             pipeline.append(sort_string)
 
         if startAt is not None:
-            pipeline.append()
+            skip_string = {"$skip": startAt-1}
+            pipeline.append(skip_string)
 
-        if endAt is not None:
-            pipeline.append()
+        if limitToFirst is not None:
+            if endAt is not None:
+                if endAt < limitToFirst:
+                    limit_string = {"$limit": endAt}
+                else:
+                    limit_string = {"$limit": limitToFirst}
+            else:
+                limit_string = {"$limit": limitToFirst}
+            print("limit_string: ", limit_string)
+            pipeline.append(limit_string)
+
+        #if endAt is not None:
+        #    pipeline.append()
+
+        if limitToLast is not None:
+            limit_string = {"$limit": limitToLast}
+
+            if endAt is not None:
+                if endAt > limitToLast:
+                    skip_string = {"$skip": endAt - limitToLast}
+                else:
+                    skip_string = {"$skip": 0}
+                    limit_string = {"$limit": endAt}
+            else:
+                temp = list(sort_string["$sort"].keys())
+                pipeline.remove(sort_string)
+                # print(str(temp[0]))
+                # reverse order of sort, and update pipeline string
+                sort_string["$sort"][str(temp[0])] = -1
+                pipeline.append(sort_string)
+            # print(sort_string)
+            pipeline.append(skip_string)
+            pipeline.append(limit_string)
+
 
         if equalTo is not None:
             pipeline.append()
 
-        if limitToFirst is not None:
-            limit_string = {"$limit": int(limitToFirst)}
-            pipeline.append(limit_string)
-        if limitToLast is not None:
-            limit_string = {"$limit": int(limitToLast)}
-            temp = list(sort_string["$sort"].keys())
-            pipeline.remove(sort_string)
-            #print(str(temp[0]))
-            # reverse order of sort, and update pipeline string
-            sort_string["$sort"][str(temp[0])] = -1
-            #print(sort_string)
-            pipeline.append(sort_string)
-            pipeline.append(limit_string)
 
     results = collection.aggregate(pipeline)
+    print("pipeline: ", str(pipeline))
     return results
 
 def main():
@@ -110,44 +165,71 @@ def main():
 
     @app.route('/<path:myPath>', methods=['DELETE'])
     def delete(myPath):
-        return "Deleting"
+
+        thisCollection, thisRecord = parsePath(myPath)
+        if thisRecord != "":
+            print("ok")
+            results = deleteRecord(thisCollection, thisRecord)
+            return "DELETE OK: " + str(results.deleted_count)
+        else:
+            return "Cannot delete collection"
 
     @app.route('/<path:myPath>', methods=['GET'])
     def get(myPath):
 
-        orderBy = request.args.get("orderBy")
-        limitToFirst = request.args.get("limitToFirst")
-        limitToLast = request.args.get("limitToLast")
-        equalTo = request.args.get("equalTo")
-        startAt = request.args.get("startAt")
-        endAt = request.args.get("endAt")
-        print("limit ",limitToFirst)
+        thisCollection, thisRecord = parsePath(myPath)
 
-        #request.args.get("orderBy")
+        orderBy = request.args.get("orderBy", type=str)
+        limitToFirst = request.args.get('limitToFirst', type=int)
+        limitToLast = request.args.get("limitToLast", type=int)
+        equalTo = request.args.get("equalTo", type=str)
+        startAt = request.args.get("startAt", type=int)
+        endAt = request.args.get("endAt", type=int)
+        style = request.args.get("print", type=str)
+        print("limit ", limitToFirst)
 
-        #results = collection.find()
-        #print(format_json(results))
         #ToDo need to move to function and address deep path
-        if myPath not in myMongoCollections:
+        if thisCollection not in myMongoCollections:
             results = ""
         else:
-            results = getQuery(myPath, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt)
-        return format_json(results)
+            results = getQuery(thisCollection, thisRecord, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt)
+        return format_json(results, style)
 
     @app.route('/<path:myPath>', methods=['PATCH'])
     def patch(myPath):
-        return "Patching"
+
+        thisCollection, thisRecord = parsePath(myPath)
+        content = request.get_data()
+        data = json.loads(content)
+        results = updateRecord(thisCollection, thisRecord, data, True)
+        return "PATCH " + str(results.acknowledged) + " UpsertedID: " + str(results.upserted_id)
 
     @app.route('/<path:myPath>', methods=['POST'])
     def post(myPath):
-        return "Posting"
+
+        thisCollection, thisRecord = parsePath(myPath)
+        content = request.get_data()
+        # print(content.decode("utf-8"))
+        data = json.loads(content)
+        # print(format_json(data, style))
+        results = insertRecord(thisCollection, data)
+        # print(results)
+        return "POST " + str(results.acknowledged) + " insertedID: " + str(results.inserted_id)
 
     @app.route('/<path:myPath>', methods=['PUT'])
     def put(myPath):
-        print(myPath)
-        data = {"status": "Putting"}
-        return jsonify(data)
 
+        thisCollection, thisRecord = parsePath(myPath)
+
+        content = request.get_data()
+        data = json.loads(content)
+        if thisRecord == "":
+            results = insertRecord(thisCollection, data)
+            message = " InsertedID: " + str(results.inserted_id)
+        else:
+            results = updateRecord(thisCollection, thisRecord, data, False)
+            message = " UpsertedID: " + str(results.upserted_id)
+        return "PUT " + str(results.acknowledged) + message
 
 if __name__ == '__main__':
     main()

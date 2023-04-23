@@ -13,18 +13,27 @@
         </iframe>
     </div>
     <br>
-    <div id="alertBox"> Alert = <span id='value' ></span></div>
+    <div id="alertBox"><span id="alert" ></span>
+    </div>
 
         <script>
             var ws = new WebSocket("ws://127.0.0.1:5678/");
 
-            var value = document.getElementById('value');
+            var value = document.getElementById('alert');
             var messageText = "";
             ws.onmessage = function (message) {
-                value.innerHTML = message.data;
+
                 var temp = (message.data).split(" ");
                 var latitude = temp[0];
                 var longitude = temp[1];
+                var city
+                var time
+                var scale
+                var direction
+                var speed
+                var threat_level
+                alertMessage = "ALERT: Zombies were detected near " + city + " (" + latitude + " " + longitude +")"
+                value.innerHTML = alertMessage;
                 document.getElementById('GoogleMap').contentWindow.location.replace("map.html?latitude=" + latitude +
                     "&longitude=" + longitude)
             };

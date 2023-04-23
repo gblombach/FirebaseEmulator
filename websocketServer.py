@@ -34,10 +34,19 @@ async def get_insert():
     change_stream = collection.watch([{"$match": {"operationType": "insert"}}])
     for change in change_stream:
         message = change["fullDocument"]
-        latitude = message["latitude"]
-        longitude = message["longitude"]
-        print(latitude, longitude)
-        return latitude, " ", longitude
+        timestamp = message["timestamp"]
+        location = message["location"]
+        latitude = location["latitude"]
+        longitude = location["longitude"]
+        locale = location["locale"]
+        scale = message["scale"]
+        direction = message["direction"]
+        speed = message["speed"]
+        threat_level = message["treat_level"]
+        #for item in message:
+        #    print(str(item))
+        print(latitude, " ", longitude)
+        return str(latitude), " ", str(longitude)
 
 
 async def send_alert(websocket, path):
@@ -51,6 +60,7 @@ async def send_alert(websocket, path):
         await asyncio.sleep(0)
 
 start_server = websockets.serve(send_alert, '127.0.0.1', 5678)
+#start_server = websockets.serve(send_alert, '34.216.225.127', 5678)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
