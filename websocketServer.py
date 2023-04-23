@@ -18,7 +18,8 @@ from pymongo import MongoClient
 
 # set mongo DB
 myMongoInstance = "mongodb://34.216.225.127:27017"
-#myMongoDB = "mongoDB://localhost:27017"
+#myMongoInstance = "mongodb://127.0.0.1:27017"
+
 myMongoDB = "ZAS"
 myMongoCollection = "Alerts"
 
@@ -42,11 +43,12 @@ async def get_insert():
         scale = message["scale"]
         direction = message["direction"]
         speed = message["speed"]
-        threat_level = message["treat_level"]
+        threat_level = message["threat_level"]
         #for item in message:
         #    print(str(item))
         print(latitude, " ", longitude)
-        return str(latitude), " ", str(longitude)
+        return str(latitude), " ", str(longitude), " ", str(locale), " ", str(timestamp), " ", str(scale) , \
+               " ", str(direction), " ", str(speed), " ", str(threat_level)
 
 
 async def send_alert(websocket, path):

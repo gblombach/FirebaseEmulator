@@ -35,7 +35,7 @@ import json
 
 # set mongo DB
 myMongoInstance = "mongodb://34.216.225.127:27017"
-#myMongoDB = "mongoDB://localhost:27017"
+#myMongoInstance = "mongodb://127.0.0.1:27017"
 myMongoDB = "ZAS"
 myMongoCollections = ["Alerts", "Regions", "fruit"]
 
@@ -68,8 +68,11 @@ def parsePath(myPath):
 def deleteRecord(thisCollection, thisRecord):
 
     collection = db[thisCollection]
-    print("delete ", thisRecord)
-    results = collection.delete_one({"_id": ObjectId(thisRecord)})
+    #print("delete ", thisRecord)
+    if thisCollection == "Alerts":
+        results = collection.delete_one({"_id": ObjectId(thisRecord)})
+    else:
+        results = collection.delete_one({"_id": int(thisRecord)})
     return results
 
 def insertRecord(thisCollection, data):
@@ -93,7 +96,10 @@ def getQuery(thisCollection, thisRecord, orderBy, limitToFirst, limitToLast, equ
     collection = db[thisCollection]
     sort_direction = 1
 
-    match_string = {"$match": {}}
+    if thisRecord == "":
+        match_string = {"$match": {}}
+    else:
+        match_string = {"$match": {"_id": thisRecord}}
     pipeline = [match_string]
 
     #//Todo need to test single and double quotes in curl on Ubuntu
@@ -102,8 +108,8 @@ def getQuery(thisCollection, thisRecord, orderBy, limitToFirst, limitToLast, equ
         if orderBy == "'$key'":
             sort_string = {"$sort": {"_id": sort_direction}}
             pipeline.append(sort_string)
-        elif orderBy == "$value":
-            sort_string = {"$sort": {"value": sort_direction}}
+        elif orderBy == "'$value'":
+            sort_string = {"$sort": {"_id": sort_direction}}
             pipeline.append(sort_string)
         else:
             sort_string = {"$sort": {orderBy: sort_direction}}
@@ -124,17 +130,17 @@ def getQuery(thisCollection, thisRecord, orderBy, limitToFirst, limitToLast, equ
             print("limit_string: ", limit_string)
             pipeline.append(limit_string)
 
-        #if endAt is not None:
-        #    pipeline.append()
+        if endAt is not None and limitToFirst is None and limitToLast is None:
+            limit_string = {"$limit": endAt}
+            pipeline.append(limit_string )
 
         if limitToLast is not None:
             limit_string = {"$limit": limitToLast}
-
+            skip_string = {"$skip": 0}
             if endAt is not None:
                 if endAt > limitToLast:
                     skip_string = {"$skip": endAt - limitToLast}
                 else:
-                    skip_string = {"$skip": 0}
                     limit_string = {"$limit": endAt}
             else:
                 temp = list(sort_string["$sort"].keys())
@@ -147,9 +153,10 @@ def getQuery(thisCollection, thisRecord, orderBy, limitToFirst, limitToLast, equ
             pipeline.append(skip_string)
             pipeline.append(limit_string)
 
-
         if equalTo is not None:
-            pipeline.append()
+            match_string = {"$match": {"_id": equalTo}}
+            pipeline = [match_string]
+
 
 
     results = collection.aggregate(pipeline)
@@ -170,7 +177,7 @@ def main():
         if thisRecord != "":
             print("ok")
             results = deleteRecord(thisCollection, thisRecord)
-            return "DELETE OK: " + str(results.deleted_count)
+            return "DELETE " + str(results.acknowledged) + ": " + str(results.deleted_count)
         else:
             return "Cannot delete collection"
 
@@ -182,7 +189,7 @@ def main():
         orderBy = request.args.get("orderBy", type=str)
         limitToFirst = request.args.get('limitToFirst', type=int)
         limitToLast = request.args.get("limitToLast", type=int)
-        equalTo = request.args.get("equalTo", type=str)
+        equalTo = request.args.get("equalTo", type=int)
         startAt = request.args.get("startAt", type=int)
         endAt = request.args.get("endAt", type=int)
         style = request.args.get("print", type=str)

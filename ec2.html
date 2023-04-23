@@ -17,7 +17,7 @@
     </div>
 
         <script>
-            var ws = new WebSocket("ws://127.0.0.1:5678/");
+            var ws = new WebSocket("ws://34.216.225.127:5678/");
 
             var value = document.getElementById('alert');
             var messageText = "";
@@ -32,7 +32,9 @@
                 var direction = temp[5];
                 var speed = temp[6];
                 var threat_level = temp[7];
-                alertMessage = "ALERT: Zombies were detected near " + locale + " (" + latitude + " " + longitude +")"
+                alertMessage = "ALERT: A " + scale + " Zombies were detected near " + locale + " (" +
+                    latitude + " " + longitude +") at" + time + ". They were moving " + direction + " at " + speed +
+                    ". The treat Level is " + threat_level + "."
                 value.innerHTML = alertMessage;
                 document.getElementById('GoogleMap').contentWindow.location.replace("map.html?latitude=" + latitude +
                     "&longitude=" + longitude)
