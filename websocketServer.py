@@ -47,8 +47,8 @@ async def get_insert():
         #for item in message:
         #    print(str(item))
         print(latitude, " ", longitude)
-        return str(latitude), " ", str(longitude), " ", str(locale), " ", str(timestamp), " ", str(scale) , \
-               " ", str(direction), " ", str(speed), " ", str(threat_level)
+        return str(latitude), ",", str(longitude), ",", str(locale), ",", str(timestamp), ",", str(scale), \
+               ",", str(direction), ",", str(speed), ",", str(threat_level)
 
 
 async def send_alert(websocket, path):

@@ -84,10 +84,17 @@ def insertRecord(thisCollection, data):
 def updateRecord(thisCollection, thisRecord, data, upsert):
 
     collection = db[thisCollection]
-    if upsert:
-        results = collection.update_one({"_id": ObjectId(thisRecord)}, {"$set": data}, upsert)
+    if thisCollection == "Regions":
+        if upsert:
+            results = collection.update_one({"_id": int(thisRecord)}, {"$set": data}, upsert)
+        else:
+            results = collection.update_one({"_id": int(thisRecord)}, {"$set": data})
     else:
-        results = collection.update_one({"_id": ObjectId(thisRecord)}, {"$set": data})
+        if upsert:
+            results = collection.update_one({"_id": ObjectId(thisRecord)}, {"$set": data}, upsert)
+        else:
+            results = collection.update_one({"_id": ObjectId(thisRecord)}, {"$set": data})
+
     return results
 
 def getQuery(thisCollection, thisRecord, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt):
@@ -99,16 +106,18 @@ def getQuery(thisCollection, thisRecord, orderBy, limitToFirst, limitToLast, equ
     if thisRecord == "":
         match_string = {"$match": {}}
     else:
+        if thisCollection == "Regions":
+            thisRecord = int(thisRecord)
         match_string = {"$match": {"_id": thisRecord}}
     pipeline = [match_string]
 
     #//Todo need to test single and double quotes in curl on Ubuntu
 
     if orderBy is not None:
-        if orderBy == "'$key'":
+        if orderBy == "$key" or orderBy == "'$key'" or orderBy == "\"$key\"":
             sort_string = {"$sort": {"_id": sort_direction}}
             pipeline.append(sort_string)
-        elif orderBy == "'$value'":
+        elif orderBy == "$value" or orderBy == "'$value'" or orderBy == "\"$value\"":
             sort_string = {"$sort": {"_id": sort_direction}}
             pipeline.append(sort_string)
         else:
@@ -177,9 +186,9 @@ def main():
         if thisRecord != "":
             print("ok")
             results = deleteRecord(thisCollection, thisRecord)
-            return "DELETE " + str(results.acknowledged) + ": " + str(results.deleted_count)
+            return "DELETE " + str(results.acknowledged) + ": " + str(results.deleted_count) + "\n"
         else:
-            return "Cannot delete collection"
+            return "Cannot delete collection" + "\n"
 
     @app.route('/<path:myPath>', methods=['GET'])
     def get(myPath):
@@ -199,8 +208,9 @@ def main():
         if thisCollection not in myMongoCollections:
             results = ""
         else:
+
             results = getQuery(thisCollection, thisRecord, orderBy, limitToFirst, limitToLast, equalTo, startAt, endAt)
-        return format_json(results, style)
+        return format_json(results, style) + "\n"
 
     @app.route('/<path:myPath>', methods=['PATCH'])
     def patch(myPath):
@@ -208,8 +218,8 @@ def main():
         thisCollection, thisRecord = parsePath(myPath)
         content = request.get_data()
         data = json.loads(content)
-        results = updateRecord(thisCollection, thisRecord, data, True)
-        return "PATCH " + str(results.acknowledged) + " UpsertedID: " + str(results.upserted_id)
+        results = updateRecord(thisCollection, thisRecord, data, False)
+        return "PATCH " + str(results.acknowledged) + " Modified: " + str(results.modified_count) + "\n"
 
     @app.route('/<path:myPath>', methods=['POST'])
     def post(myPath):
@@ -221,7 +231,7 @@ def main():
         # print(format_json(data, style))
         results = insertRecord(thisCollection, data)
         # print(results)
-        return "POST " + str(results.acknowledged) + " insertedID: " + str(results.inserted_id)
+        return "POST " + str(results.acknowledged) + " insertedID: " + str(results.inserted_id) + "\n"
 
     @app.route('/<path:myPath>', methods=['PUT'])
     def put(myPath):
@@ -234,9 +244,9 @@ def main():
             results = insertRecord(thisCollection, data)
             message = " InsertedID: " + str(results.inserted_id)
         else:
-            results = updateRecord(thisCollection, thisRecord, data, False)
+            results = updateRecord(thisCollection, thisRecord, data, True)
             message = " UpsertedID: " + str(results.upserted_id)
-        return "PUT " + str(results.acknowledged) + message
+        return "PUT " + str(results.acknowledged) + message + "\n"
 
 if __name__ == '__main__':
     main()

@@ -23,7 +23,7 @@
             var messageText = "";
             ws.onmessage = function (message) {
 
-                var temp = (message.data).split(" ");
+                var temp = (message.data).split(",");
                 var latitude = temp[0];
                 var longitude = temp[1];
                 var locale = temp[2];
@@ -32,13 +32,17 @@
                 var direction = temp[5];
                 var speed = temp[6];
                 var threat_level = temp[7];
-                alertMessage = "ALERT: A " + scale + " Zombies were detected near " + locale + " (" +
-                    latitude + " " + longitude +") at" + time + ". They were moving " + direction + " at " + speed +
-                    ". The treat Level is " + threat_level + "."
+                alertMessage = "ALERT: A " + scale + " of Zombies was detected near " + locale + " (" +
+                    latitude + " " + longitude +") on " + time + ". They were moving " + direction + " at " + speed +
+                    ". The Threat Level is " + threat_level + "."
                 value.innerHTML = alertMessage;
                 document.getElementById('GoogleMap').contentWindow.location.replace("map.html?latitude=" + latitude +
                     "&longitude=" + longitude)
+
+
             };
+
+
 
         </script>
     </body>
